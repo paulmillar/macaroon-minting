@@ -1,0 +1,183 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+
+ <!-- RFC 2119 -->
+ <!ENTITY MAY "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
+   >MAY</bcp14>">
+ <!ENTITY MUST "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
+   >MUST</bcp14>">
+ <!ENTITY MUST-NOT "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
+   >MUST NOT</bcp14>">
+ <!ENTITY OPTIONAL "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
+   >OPTIONAL</bcp14>">
+ <!ENTITY RECOMMENDED "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
+   >RECOMMENDED</bcp14>">
+ <!ENTITY REQUIRED "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
+   >REQUIRED</bcp14>">
+ <!ENTITY SHALL "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
+   >SHALL</bcp14>">
+ <!ENTITY SHALL-NOT "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
+   >SHALL NOT</bcp14>">
+ <!ENTITY SHOULD "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
+   >SHOULD</bcp14>">
+ <!ENTITY SHOULD-NOT "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
+ >SHOULD NOT</bcp14>">
+]>
+
+<rfc category="info" docName="macaroon-mint" submissionType="independent">
+  <front>
+    <title>Macaroon minting service</title>
+    <author initials="AP" surname="Millar">
+      <organization abbrev="DESY">Deutsches Elektronen-Synchrotron</organization>
+      <address>
+	<postal>
+	  <street>Notkestrasse 85</street>
+	  <city>Hamburg</city>
+	  <code>22607</code>
+	  <country>Germany</country>
+	</postal>
+	<email>paul.millar@desy.de</email>
+      </address>
+    </author>
+
+    <date day="9" month="February" year="2016"/>
+
+    <keyword>macaroons</keyword>
+    <keyword>bearer-token</keyword>
+    
+    <abstract>
+      <t>Macaroons are bearer tokens that can include contextual
+      caveats and support appending additional caveats after the token
+      was issued.</t>
+
+      <t>This document describes a simple API that allows a client to
+      request a macaroon be minted that captures the client's
+      authentication context along with zero or more additional
+      caveats.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+      <t>In 2014, a group of six security researchers introduced the
+      concept of macaroons with their paper "Macaroons: Cookies with
+      Contextual Caveats for Decentralized Authorization in the
+      Cloud".  In essence, a macaroon is a bearer token with the
+      following properties: its usage may be restricted in any fashion
+      that can be written as a text string, a macaroon may have
+      multiple such restrictions, an agent possessing the macaroon can
+      further restrict its usage but cannot remove any existing
+      restrictions, caveats may require the client provides proof from
+      some third-party.  Further details are available in the
+      paper.</t>
+
+      <t>This document describes how an authenticated client may
+      request a macaroon to encapsulate their authentication context
+      along with a set of caveats.  This macaroon may be used to
+      authenticate as part of a login session, or may be delegated to
+      a third-party.</t>
+
+      <t>The client must be authenticated so that the macaroon is
+      associated with the correct context.  How this authentication
+      happens is outside the scope of this document.</t>
+    </section>
+    
+    <section title="Requesting a macaroon">
+      <t>The client requests that the server creates a macaroon by
+      issues an HTTP POST request to the path <spanx
+      style="verb">/.well-known/macaroons</spanx>.  The request MUST
+      have a <spanx style="verb">Content-Type</spanx> header with
+      value <spanx
+      style="verb">application/json+macaroon-request</spanx>.  The
+      request entity must be a valid JSON object.</t>
+
+      <t>The client MAY specify arguments that describe aspects of the
+      desired macaroon in the form of one or more name/value pairs in
+      the JSON object.  The letters in a name MUST be either only
+      upper-case letters or only lower-case letters.  The server MUST
+      process any request with a lower-case name that it does not
+      understand as if the request did not contain that name/value
+      pair.  The server MUST reject any request that contains an
+      upper-case name that it does not understand.</t>
+
+      <t>The following names are defined:
+      <list style="hanging">
+	<t hangText="CAVEATS">the value is a JSON list of String
+	values.  Each JSON String is a caveat requested by the client.
+	The client MUST NOT specify an empty list.  The server MUST
+	either return a macaroon that includes all requested caveats
+	or reject the request.</t>
+      </list>
+      </t>
+    </section>
+
+    <section title="Server response">
+      <t>In general, the server MUST respond to the HTTP POST requests
+      with an HTTP response that has <spanx
+      style="verb">Content-Type</spanx> header of <spanx
+      style="verb">application/json+macaroon-response</spanx>.  The
+      entity in the response is a valid JSON Object.</t>
+
+      <t>The response JSON Object MAY include the following names:
+      <list style="hanging">
+	<t hangText="reason">the value is a JSON Object that provides
+	human-readable description of the result.  The entries in this
+	Object are messages in different languages.  The name is an
+	RFC 5646 language tag and the value is a JSON String of the
+	message in that particular language.  If the server includes a
+	reason then it SHOULD include one entry using the <spanx
+	style="verb">en</spanx> language tag.</t>
+
+	<t hangText="invalid-caveats">the value is a non-empty JSON
+	List of String values.  Each String value is a requested
+	caveat that the server does not understand or is badly
+	formatted.</t>
+
+	<t hangText="macaroon">the value is a String value containing
+	the minted macaroon.</t>
+      </list>
+      </t>
+      
+      <t>The server MUST reject requests from unauthenticated users
+      with 401 Unauthenticated, as per RFC 7235.  The server MAY
+      respond with 401 if the client has authenticated in a way that
+      server policy rejects creating a macaroon but alternative
+      authentication mechanisms exist with which the client could
+      authenticate and the macaroon request would be accepted.</t>
+
+      <t>The server SHOULD reject request with 403 Forbidden if the
+      request comes from an authenticated client where the server
+      policy rejects creating a macaroon for that user.</t>
+
+      <t>The server MUST return 400 Bad Request if the client request
+      contains the wrong <spanx style="verb">Content-Type</spanx>
+      header value, or the request entity is not a valid JSON Object.
+      The response MAY contain a JSON object with a informative
+      reason.</t>
+      
+      <t>The server MUST reject any request that contains a caveat it
+      does not understand or is badly formatted, failing the request
+      with the 400 Bad Request status code.  The server SHOULD include
+      the rejected caveats in the response JSON Object's
+      invalid-caveats list.</t>
+
+      <t>If the request is successful then the server responds with a
+      200 OK status code.  The response MUST contain the <spanx
+      style="verb">Content-Type</spanx> header with value <spanx
+      style="verb">application/json+macaroon-response</spanx>.  The
+      response JSON object MUST have a <spanx
+      style="verb">macaroon</spanx> name/value pair containing the
+      minted macaroon.</t>
+
+      <t>The returned macaroon MAY contain caveats not request by the
+      user.  Such caveats may represent security policies that the
+      server enforces, or may encapsulate the client's identity.</t>
+    </section>
+  </middle>
+  
+  <back>
+    <!-- references -->
+    <!-- section* -->
+  </back>
+</rfc>
