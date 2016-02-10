@@ -100,11 +100,10 @@
     <section title="Requesting a macaroon">
       <t>The client requests that the server creates a macaroon by
       issuing an HTTP POST request to the path <spanx
-      style="verb">/.well-known/macaroons</spanx>.  The request MUST
-      have a <spanx style="verb">Content-Type</spanx> header with
-      value <spanx
-      style="verb">application/json</spanx>.  The request entity
-      must be a valid JSON object.</t>
+      style="verb">/.well-known/macaroons/mint</spanx>.  The request
+      MUST have a <spanx style="verb">Content-Type</spanx> header with
+      value <spanx style="verb">application/json</spanx>.  The request
+      entity must be a valid JSON object.</t>
 
       <t>The client MAY specify arguments that describe aspects of the
       desired macaroon in the form of one or more name/value pairs in
