@@ -52,7 +52,7 @@
       was issued.</t>
 
       <t>This document describes a simple API that allows a client to
-      request a macaroon be minted that captures the client's
+      request a macaroon to be minted that encodes the client's
       authentication context along with zero or more additional
       caveats.</t>
     </abstract>
@@ -66,9 +66,9 @@
       Cloud".  In essence, a macaroon is a bearer token with the
       following properties: its usage may be restricted in any fashion
       that can be written as a text string, a macaroon may have
-      multiple such restrictions, an agent possessing the macaroon can
+      multiple such restrictions.  An agent possessing the macaroon can
       further restrict its usage but cannot remove any existing
-      restrictions, caveats may require the client provides proof from
+      restrictions, caveats may require the client to provide proof from
       some third-party.  Further details are available in the
       paper.</t>
 
@@ -85,12 +85,12 @@
     
     <section title="Requesting a macaroon">
       <t>The client requests that the server creates a macaroon by
-      issues an HTTP POST request to the path <spanx
+      issuing an HTTP POST request to the path <spanx
       style="verb">/.well-known/macaroons</spanx>.  The request MUST
       have a <spanx style="verb">Content-Type</spanx> header with
       value <spanx
-      style="verb">application/json+macaroon-request</spanx>.  The
-      request entity must be a valid JSON object.</t>
+      style="verb">application/json</spanx>.  The request entity 
+      must be a valid JSON object.</t>
 
       <t>The client MAY specify arguments that describe aspects of the
       desired macaroon in the form of one or more name/value pairs in
@@ -116,8 +116,8 @@
       <t>In general, the server MUST respond to the HTTP POST requests
       with an HTTP response that has <spanx
       style="verb">Content-Type</spanx> header of <spanx
-      style="verb">application/json+macaroon-response</spanx>.  The
-      entity in the response is a valid JSON Object.</t>
+      style="verb">application/json</spanx>.  The entity in the 
+      response is a valid JSON Object.</t>
 
       <t>The response JSON Object MAY include the following names:
       <list style="hanging">
@@ -165,13 +165,12 @@
       <t>If the request is successful then the server responds with a
       200 OK status code.  The response MUST contain the <spanx
       style="verb">Content-Type</spanx> header with value <spanx
-      style="verb">application/json+macaroon-response</spanx>.  The
-      response JSON object MUST have a <spanx
-      style="verb">macaroon</spanx> name/value pair containing the
-      minted macaroon.</t>
+      style="verb">application/json</spanx>.  The response JSON object
+      MUST have a <spanxstyle="verb">macaroon</spanx> name/value pair 
+      containing the minted macaroon.</t>
 
-      <t>The returned macaroon MAY contain caveats not request by the
-      user.  Such caveats may represent security policies that the
+      <t>The returned macaroon MAY contain caveats not requested by
+      the user.  Such caveats may represent security policies that the
       server enforces, or may encapsulate the client's identity.</t>
     </section>
   </middle>
