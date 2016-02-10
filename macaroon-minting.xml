@@ -28,7 +28,7 @@
 <rfc category="info" docName="macaroon-mint" submissionType="independent">
   <front>
     <title>Macaroon minting service</title>
-    <author initials="AP" surname="Millar">
+    <author initials="P." surname="Millar" fullname="Paul Millar">
       <organization abbrev="DESY">Deutsches Elektronen-Synchrotron</organization>
       <address>
         <postal>
@@ -41,7 +41,7 @@
       </address>
     </author>
 
-    <author initials="B" surname="Wegh">
+    <author initials="B." surname="Wegh" fullname="Bas Wegh">
       <organization abbrev="KIT">Karlsruher Institut fuer Technologie</organization>
       <address>
         <postal>
