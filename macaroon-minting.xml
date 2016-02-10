@@ -45,7 +45,7 @@
 
     <keyword>macaroons</keyword>
     <keyword>bearer-token</keyword>
-    
+
     <abstract>
       <t>Macaroons are bearer tokens that can include contextual
       caveats and support appending additional caveats after the token
@@ -82,14 +82,14 @@
       associated with the correct context.  How this authentication
       happens is outside the scope of this document.</t>
     </section>
-    
+
     <section title="Requesting a macaroon">
       <t>The client requests that the server creates a macaroon by
       issuing an HTTP POST request to the path <spanx
       style="verb">/.well-known/macaroons</spanx>.  The request MUST
       have a <spanx style="verb">Content-Type</spanx> header with
       value <spanx
-      style="verb">application/json</spanx>.  The request entity 
+      style="verb">application/json</spanx>.  The request entity
       must be a valid JSON object.</t>
 
       <t>The client MAY specify arguments that describe aspects of the
@@ -116,7 +116,7 @@
       <t>In general, the server MUST respond to the HTTP POST requests
       with an HTTP response that has <spanx
       style="verb">Content-Type</spanx> header of <spanx
-      style="verb">application/json</spanx>.  The entity in the 
+      style="verb">application/json</spanx>.  The entity in the
       response is a valid JSON Object.</t>
 
       <t>The response JSON Object MAY include the following names:
@@ -138,7 +138,7 @@
 	the minted macaroon.</t>
       </list>
       </t>
-      
+
       <t>The server MUST reject requests from unauthenticated users
       with 401 Unauthenticated, as per RFC 7235.  The server MAY
       respond with 401 if the client has authenticated in a way that
@@ -155,7 +155,7 @@
       header value, or the request entity is not a valid JSON Object.
       The response MAY contain a JSON object with a informative
       reason.</t>
-      
+
       <t>The server MUST reject any request that contains a caveat it
       does not understand or is badly formatted, failing the request
       with the 400 Bad Request status code.  The server SHOULD include
@@ -166,7 +166,7 @@
       200 OK status code.  The response MUST contain the <spanx
       style="verb">Content-Type</spanx> header with value <spanx
       style="verb">application/json</spanx>.  The response JSON object
-      MUST have a <spanx style="verb">macaroon</spanx> name/value pair 
+      MUST have a <spanx style="verb">macaroon</spanx> name/value pair
       containing the minted macaroon.</t>
 
       <t>The returned macaroon MAY contain caveats not requested by
@@ -174,7 +174,7 @@
       server enforces, or may encapsulate the client's identity.</t>
     </section>
   </middle>
-  
+
   <back>
     <!-- references -->
     <!-- section* -->
