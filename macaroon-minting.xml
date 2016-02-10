@@ -166,7 +166,7 @@
       200 OK status code.  The response MUST contain the <spanx
       style="verb">Content-Type</spanx> header with value <spanx
       style="verb">application/json</spanx>.  The response JSON object
-      MUST have a <spanxstyle="verb">macaroon</spanx> name/value pair 
+      MUST have a <spanx style="verb">macaroon</spanx> name/value pair 
       containing the minted macaroon.</t>
 
       <t>The returned macaroon MAY contain caveats not requested by
