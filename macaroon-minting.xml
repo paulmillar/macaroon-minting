@@ -31,13 +31,13 @@
     <author initials="AP" surname="Millar">
       <organization abbrev="DESY">Deutsches Elektronen-Synchrotron</organization>
       <address>
-	<postal>
-	  <street>Notkestrasse 85</street>
-	  <city>Hamburg</city>
-	  <code>22607</code>
-	  <country>Germany</country>
-	</postal>
-	<email>paul.millar@desy.de</email>
+        <postal>
+          <street>Notkestrasse 85</street>
+          <city>Hamburg</city>
+          <code>22607</code>
+          <country>Germany</country>
+        </postal>
+        <email>paul.millar@desy.de</email>
       </address>
     </author>
 
@@ -117,11 +117,16 @@
 
       <t>The following names are defined:
       <list style="hanging">
-	<t hangText="CAVEATS">the value is a JSON list of String
-	values.  Each JSON String is a caveat requested by the client.
-	The client MUST NOT specify an empty list.  The server MUST
-	either return a macaroon that includes all requested caveats
-	or reject the request.</t>
+        <t hangText="id">the value is a JSON String.  The server will
+        include the supplied value in any response JSON object.  A
+        client SHOULD NOT send requests with id values longer than 100
+        characters.</t>
+
+        <t hangText="caveats">the value is a JSON list of String
+        values.  Each JSON String is a caveat requested by the client.
+        The client MUST NOT specify an empty list.  The server MUST
+        either return a macaroon that includes all requested caveats
+        or reject the request.</t>
       </list>
       </t>
     </section>
@@ -135,21 +140,25 @@
 
       <t>The response JSON Object MAY include the following names:
       <list style="hanging">
-	<t hangText="reason">the value is a JSON Object that provides
-	human-readable description of the result.  The entries in this
-	Object are messages in different languages.  The name is an
-	RFC 5646 language tag and the value is a JSON String of the
-	message in that particular language.  If the server includes a
-	reason then it SHOULD include one entry using the <spanx
-	style="verb">en</spanx> language tag.</t>
+        <t hangText="id">the value is the JSON String the client
+        supplied as the <spanx style="verb">id</spanx> value in the
+        request.</t>
 
-	<t hangText="invalid-caveats">the value is a non-empty JSON
-	List of String values.  Each String value is a requested
-	caveat that the server does not understand or is badly
-	formatted.</t>
+        <t hangText="reason">the value is a JSON Object that provides
+        human-readable description of the result.  The entries in this
+        Object are messages in different languages.  The name is an
+        RFC 5646 language tag and the value is a JSON String of the
+        message in that particular language.  If the server includes a
+        reason then it SHOULD include one entry using the <spanx
+        style="verb">en</spanx> language tag.</t>
 
-	<t hangText="macaroon">the value is a String value containing
-	the minted macaroon.</t>
+        <t hangText="invalid-caveats">the value is a non-empty JSON
+        List of String values.  Each String value is a requested
+        caveat that the server does not understand or is badly
+        formatted.</t>
+
+        <t hangText="macaroon">the value is a String value containing
+        the minted macaroon.</t>
       </list>
       </t>
 
