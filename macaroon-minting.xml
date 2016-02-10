@@ -41,6 +41,20 @@
       </address>
     </author>
 
+    <author initials="B" surname="Wegh">
+      <organization abbrev="KIT">Karlsruher Institut fuer Technologie</organization>
+      <address>
+        <postal>
+          <street>Kaiserstrasse 12</street>
+          <city>Karlsruhe</city>
+          <code>76131</code>
+          <country>Germany</country>
+        </postal>
+        <email>bas.wegh@kit.edu</email>
+      </address>
+    </author>
+
+
     <date day="9" month="February" year="2016"/>
 
     <keyword>macaroons</keyword>
