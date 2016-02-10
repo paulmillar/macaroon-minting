@@ -28,7 +28,7 @@
 <rfc category="info" docName="macaroon-mint" submissionType="independent">
   <front>
     <title>Macaroon minting service</title>
-    <author initials="A.P." surname="Millar" fullname="Alexander Paul Millar">
+    <author initials="AP." surname="Millar" fullname="A. Paul Millar">
       <organization abbrev="DESY">Deutsches Elektronen-Synchrotron</organization>
       <address>
         <postal>
