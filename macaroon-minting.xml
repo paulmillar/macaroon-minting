@@ -1,34 +1,11 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
-<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
-
- <!-- RFC 2119 -->
- <!ENTITY MAY "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
-   >MAY</bcp14>">
- <!ENTITY MUST "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
-   >MUST</bcp14>">
- <!ENTITY MUST-NOT "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
-   >MUST NOT</bcp14>">
- <!ENTITY OPTIONAL "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
-   >OPTIONAL</bcp14>">
- <!ENTITY RECOMMENDED "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
-   >RECOMMENDED</bcp14>">
- <!ENTITY REQUIRED "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
-   >REQUIRED</bcp14>">
- <!ENTITY SHALL "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
-   >SHALL</bcp14>">
- <!ENTITY SHALL-NOT "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
-   >SHALL NOT</bcp14>">
- <!ENTITY SHOULD "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
-   >SHOULD</bcp14>">
- <!ENTITY SHOULD-NOT "<bcp14 xmlns='http://purl.org/net/xml2rfc/ext'
- >SHOULD NOT</bcp14>">
-]>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
 
 <rfc category="info" docName="macaroon-mint" submissionType="independent">
   <front>
     <title>Macaroon minting service</title>
-    <author initials="AP." surname="Millar" fullname="A. Paul Millar">
+    <author initials="AP." surname="Millar" fullname="Paul Millar">
       <organization abbrev="DESY">Deutsches Elektronen-Synchrotron</organization>
       <address>
         <postal>
@@ -55,20 +32,21 @@
     </author>
 
 
-    <date day="9" month="February" year="2016"/>
+    <date day="17" month="February" year="2016"/>
 
     <keyword>macaroons</keyword>
     <keyword>bearer-token</keyword>
 
     <abstract>
-      <t>Macaroons are bearer tokens that can include contextual
-      caveats and support appending additional caveats after the token
-      was issued.</t>
+      <t>Macaroons are bearer tokens that may including zero or more
+      caveats that attenuate rights (limit what can be done), enforce
+      some context (limit where they may be used), and include other
+      parties (delegate checking to third parties).  Any agent that
+      holds the macaroon can add additional caveats.</t>
 
       <t>This document describes a simple API that allows a client to
-      request a macaroon to be minted that encodes the client's
-      authentication context along with zero or more additional
-      caveats.</t>
+      request a macaroon to be minted along with zero or more
+      additional caveats.</t>
     </abstract>
   </front>
 
@@ -80,30 +58,74 @@
       Cloud".  In essence, a macaroon is a bearer token with the
       following properties: its usage may be restricted in any fashion
       that can be written as a text string, a macaroon may have
-      multiple such restrictions.  An agent possessing the macaroon can
-      further restrict its usage but cannot remove any existing
-      restrictions, caveats may require the client to provide proof from
-      some third-party.  Further details are available in the
-      paper.</t>
+      multiple such restrictions.  An agent possessing the macaroon
+      can further restrict its usage but cannot remove any existing
+      restrictions, caveats may require the client to provide proof
+      from some third-party.  Further details are available in their
+      paper <xref target="macaroons"/>.</t>
 
       <t>This document describes how an authenticated client may
-      request a macaroon to encapsulate their authentication context
-      along with a set of caveats.  This macaroon may be used to
-      authenticate as part of a login session, or may be delegated to
-      a third-party.</t>
+      request a macaroon.  Amongst other possible uses, the client
+      could use this macaroon to authenticate as part of a login
+      session, or it may choose to delegated it to some third-party
+      agent that will act on behalf of the client.</t>
 
-      <t>The client must be authenticated so that the macaroon is
-      associated with the correct context.  How this authentication
-      happens is outside the scope of this document.</t>
+      <t>When requesting that the server mint a macaroon, the client
+      must first discover the macaroon minting endpoint.  The macaroon
+      configuration endpoint provides a standard service where related
+      information may be discovered.  Once the macaroon minted
+      endpoint is known, the client may request a macaroon and the
+      server will respond with the result of processing that
+      request.</t>
+
+      <t>It could be that the client must authenticate so that the
+      macaroon minting request may be authorised.  The server may also
+      use such authentication to bind the macaroon to the client's
+      identity.  How any such authentication happens is outside the
+      scope of this document.</t>
+    </section>
+
+    <section title="Macaroon configuration endpoint">
+      <t>The first time a client wishes a server to mint an macaroon,
+      it must discover information about the macaroon minting service;
+      in particular, the macaroon minting endpoint.  Macaroon related
+      information, such as the minting endpoint, is available from the
+      macaroon configuration endpoint.  This endpoint MUST be
+      available from all hosts that have endpoints that accept
+      macaroons minted using this process.</t>
+
+      <t>The client requests information by issuing a GET request to
+      the <spanx style="verb">/.well-known/macaroon-config</spanx>
+      path.  The request MAY include the <spanx
+      style="verb">Accept</spanx> request header; if present, this
+      header's value MUST indicate that the <spanx
+      style="verb">application/json</spanx> MIME type is
+      acceptable.</t>
+
+      <t>The response entity is a JSON object.  The following names
+      are defined:
+      <list style="hanging">
+	<t hangText="mint-endpoint">A JSON String containing the URL
+	of the minting endpoint.  If this is a relative URL then it is
+	resolved using the macaroon configuration endpoint as the base
+	URL, according to RFC 3986.</t>
+      </list>
+      The server MAY include additional information in the macaroon
+      config JSON Object.</t>
+
+      <t>The client SHOULD cache the information returned by the
+      macaroons configuration endpoint.  If the client receives a
+      response with a status code >= 300 when using cached information
+      then it SHOULD invalid all cached information obtained from this
+      macaroon configuration JSON object.</t>
     </section>
 
     <section title="Requesting a macaroon">
       <t>The client requests that the server creates a macaroon by
-      issuing an HTTP POST request to the path <spanx
-      style="verb">/.well-known/macaroons/mint</spanx>.  The request
-      MUST have a <spanx style="verb">Content-Type</spanx> header with
-      value <spanx style="verb">application/json</spanx>.  The request
-      entity must be a valid JSON object.</t>
+      issuing an HTTP POST request to the macaroon minting endpoint.
+      The request MUST have a <spanx style="verb">Content-Type</spanx>
+      header with value <spanx style="verb">application/json</spanx>.
+      The request entity must be a valid JSON object.</t>
 
       <t>The client MAY specify arguments that describe aspects of the
       desired macaroon in the form of one or more name/value pairs in
@@ -116,18 +138,30 @@
 
       <t>The following names are defined:
       <list style="hanging">
-        <t hangText="id">the value is a JSON String.  The server will
-        include the supplied value in any response JSON object.  A
-        client SHOULD NOT send requests with id values longer than 100
-        characters.</t>
+        <t hangText="id">A JSON String that is copied verbatim into
+        any response JSON object.  A client SHOULD NOT send requests
+        with id values longer than 100 characters. This item is
+        optional.</t>
 
-        <t hangText="caveats">the value is a JSON list of String
-        values.  Each JSON String is a caveat requested by the client.
-        The client MUST NOT specify an empty list.  The server MUST
-        either return a macaroon that includes all requested caveats
-        or reject the request.</t>
+        <t hangText="caveats">A JSON List of String values, where each
+        String is a caveat requested by the client.  The client MUST
+        NOT specify an empty list.  The server MUST either return a
+        macaroon that includes all requested caveats or reject the
+        request.  This item is optional.</t>
       </list>
       </t>
+
+      <t>The request does not support the client requesting that
+      third-party caveats be included in the macaroon.  This is
+      because a third-party caveat requires a prior relationship
+      between the agent that wants to include the third-party caveat
+      (the client) and the third-party service that will issue the
+      discharge maracroon.  This prior relationship is a shared
+      secret: a key.  For the server to include such a third-party
+      macaroon, it must be given this secret key.  Therefore, clients
+      are expected to append any third-party caveats to the minted
+      macaroon.  This restriction does not affect the server; it can
+      include third-party caveats in the minted macaroon.</t>
     </section>
 
     <section title="Server response">
@@ -137,36 +171,37 @@
       style="verb">application/json</spanx>.  The entity in the
       response is a valid JSON Object.</t>
 
-      <t>The response JSON Object MAY include the following names:
+      <t>The response is a JSON Object with all names in lowercase.
+      The response MAY include the following names:
       <list style="hanging">
-        <t hangText="id">the value is the JSON String the client
+        <t hangText="id">The value is the JSON String the client
         supplied as the <spanx style="verb">id</spanx> value in the
         request.</t>
 
-        <t hangText="reason">the value is a JSON Object that provides
+        <t hangText="reason">The value is a JSON Object that provides
         human-readable description of the result.  The entries in this
         Object are messages in different languages.  The name is an
         RFC 5646 language tag and the value is a JSON String of the
         message in that particular language.  If the server includes a
-        reason then it SHOULD include one entry using the <spanx
-        style="verb">en</spanx> language tag.</t>
+        reason object then it SHOULD include one entry using the
+        <spanx style="verb">en</spanx> language tag.</t>
 
-        <t hangText="invalid-caveats">the value is a non-empty JSON
+        <t hangText="invalid-caveats">The value is a non-empty JSON
         List of String values.  Each String value is a requested
-        caveat that the server does not understand or is badly
-        formatted.</t>
+        caveat that the server cannot enforce.</t>
 
-        <t hangText="macaroon">the value is a String value containing
+        <t hangText="macaroon">The value is a String value containing
         the minted macaroon.</t>
       </list>
       </t>
 
-      <t>The server MUST reject requests from unauthenticated users
-      with 401 Unauthenticated, as per RFC 7235.  The server MAY
-      respond with 401 if the client has authenticated in a way that
-      server policy rejects creating a macaroon but alternative
-      authentication mechanisms exist with which the client could
-      authenticate and the macaroon request would be accepted.</t>
+      <t>A minting service that requires clients to authenticate MUST
+      reject requests from unauthenticated users with 401
+      Unauthenticated.  The server MAY respond with 401 if the client
+      has authenticated so that server policy rejects creating a
+      macaroon but alternative authentication mechanisms exist with
+      which the client could authenticate and the macaroon request
+      would be accepted.</t>
 
       <t>The server SHOULD reject request with 403 Forbidden if the
       request comes from an authenticated client where the server
@@ -174,8 +209,11 @@
 
       <t>The server MUST return 400 Bad Request if the client request
       contains the wrong <spanx style="verb">Content-Type</spanx>
-      header value, or the request entity is not a valid JSON Object.
-      The response MAY contain a JSON object with a informative
+      header value, the request entity is not a valid JSON Object or
+      the <spanx style="verb">Accept</spanx> request header value
+      indicates that the client cannot accept an <spanx
+      style="verb">application/json</spanx> response entity. The
+      response MAY contain a JSON Object with a informative
       reason.</t>
 
       <t>The server MUST reject any request that contains a caveat it
@@ -195,10 +233,86 @@
       the user.  Such caveats may represent security policies that the
       server enforces, or may encapsulate the client's identity.</t>
     </section>
+
+    <section title="Caveat language">
+      <t>Caveats are limitations on how the macaroon may be used; any
+      limitation that is expressible as a String may be included in a
+      macaroon.  There is no standard on how to encode these
+      limitations as caveats.  Any such caveat language is necessarily
+      couched in terms related to the purpose for which the macaroon
+      was minted.</t>
+
+      <t>To keep this document generic, any aspect related to the
+      caveat language is considered out-of-scope.  The only
+      requirement is that it is expressible as a JSON String.  It is
+      unspecified how the client knows which String to include when
+      expressing that desired limitations be enforced.</t>
+      
+      <t>The server may choose to reject a macaroon request.  It may
+      do so because it does not understand the caveat, or because
+      server policy disallows this limitation.  Therefore, it may be
+      useful for a client to discover server policy so it can adjust
+      the requested caveats to match the server's requirements.</t>
+
+      <t>Any useful description of server policy on caveats will
+      likely involves the caveat language itself, and is therefore
+      out-of-scope for this document.  Future documents may describe
+      how a client can discover server policy by extending the
+      information returned by the macaroons configuration
+      endpoint.</t>
+    </section>
+
+    <section title="Security considerations">
+      <t>Macaroons are bearer tokens.  This means that any agent that
+      possesses the token can, in principle, use it.  Adding
+      contextual caveats (such as limiting allowed client IP
+      addresses) is a mechanism to reduce this risk.  Therefore,
+      server policy may require certain contextual caveats exist in
+      any minted macaroon.</t>
+
+      <t>If the server policy requires certain contextual caveats then
+      the client may request a macaroon with caveats that satisfy that
+      requirement.  For example, the server policy may require that
+      any minted macaroon is bound to some IP address, which the
+      client can satisfy by including such a caveat in the request.
+      If the client request fails to satisfy the server policy then
+      the server MAY reject the request or it MAY include an
+      additional caveat to satisfy the policy.  If the server rejects
+      the request then it SHOULD include a JSON Object in the response
+      that uses <spanx style="verb">reason</spanx> to describe the
+      problem.</t>
+
+      <t>A caveat that the client requests may conflict with the
+      server policy; for example, the client could request an IP
+      address outside some allowed set of IP addresses.  If such a
+      conflict occurs then the server SHOULD fail the request and
+      include the caveat in the invalid-caveat list in the response
+      JSON Object.</t>
+
+      <t>If a client is authorised to use the macaroon minting
+      endpoint by some existing macaroon then the server MUST ensure
+      that all caveats from the existing macaroon are included in the
+      issued macaroon.  Failure to do this risks unintended rights
+      amplication as the client requests a fresh macaroon with fewer
+      or more relaxed caveats.</t>
+    </section>
   </middle>
 
   <back>
-    <!-- references -->
-    <!-- section* -->
+    <references title="Normative References">
+      <reference anchor="macaroons" target="http://research.google.com/pubs/pub41892.html">
+	<front>
+	  <title>Macaroons: Cookies with Contextual Caveats for Decentralized Authorization in the Cloud</title>
+	  <author fullname="Arnar Birgisson" initials="A." surname="Birgisson"/>
+	  <author fullname="Joe Gibbs Politz" initials="JG." surname="Politz"/>
+	  <author fullname="Ulfar Erlingsson" initials="U." surname="Erlingsson"/>
+	  <author fullname="Ankur Taly" initials="A." surname="Taly"/>
+	  <author fullname="Michael Vrable" initials="M." surname="Vrable"/>
+	  <author fullname="Mark Lentczner" initials="M." surname="Lentczner"/>
+	  <date year="2014"/>
+	</front>
+	<format target="http://research.google.com/pubs/archive/41892.pdf" type="PDF"/>
+      </reference>
+    </references>
   </back>
 </rfc>
