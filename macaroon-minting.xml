@@ -40,13 +40,12 @@
     <abstract>
       <t>Macaroons are bearer tokens that may including zero or more
       caveats that attenuate rights (limit what can be done), enforce
-      some context (limit where they may be used), and include other
-      parties (delegate checking to third parties).  Any agent that
-      holds the macaroon can add additional caveats.</t>
+      some context (limit where and when they may be used), and
+      include other parties (delegate checking to third parties).  Any
+      agent that holds the macaroon can add additional caveats.</t>
 
       <t>This document describes a simple API that allows a client to
-      request a macaroon to be minted along with zero or more
-      additional caveats.</t>
+      request that a macaroon is minted with zero or more caveats.</t>
     </abstract>
   </front>
 
@@ -66,9 +65,37 @@
 
       <t>This document describes how an authenticated client may
       request a macaroon.  Amongst other possible uses, the client
-      could use this macaroon to authenticate as part of a login
+      could use this macaroon to authorise activity as part of a login
       session, or it may choose to delegated it to some third-party
       agent that will act on behalf of the client.</t>
+
+      <t>The client may supply a list of first-party caveats to the
+      server when requesting a macaroon is minted.  This is optional,
+      as the macaroon design allows the client to add such caveats
+      after it receives the token.  Supplying first-party caveats to
+      the server provides three main benefits:
+      <list style="symbols">
+	<t>By the server adding the first-party caveats, the macaroon
+	is already limited when delivered to the client.  This
+	provides some limitations if the token were to be stolen.</t>
+
+	<t>It offers the client the opportunity to discover caveats
+	that are either malformed or are not acceptable to the server.
+	Rather than simply rejecting requests that are authorised by a
+	macaroon with such caveats, the server can provide more
+	detailed information when declining to mint such a
+	macaroon.</t>
+
+	<t>It allows negotiation between client and server: if the
+	client supplies caveats that satify some part of the server
+	policy then the server can refrain from adding those caveats
+	itself.  For example, if the server policy requires tokens be
+	bound to some IP address and the client requests a macaroon
+	with a caveat binding to the IP address of third-party service
+	then the client can then delegate the minted macaroon to that
+	third-party.</t>
+      </list>
+      </t>
 
       <t>When requesting that the server mint a macaroon, the client
       must first discover the macaroon minting endpoint.  The macaroon
@@ -138,9 +165,9 @@
 
       <t>The following names are defined:
       <list style="hanging">
-        <t hangText="id">A JSON String that is copied verbatim into
+        <t hangText="state">A JSON String that is copied verbatim into
         any response JSON object.  A client SHOULD NOT send requests
-        with id values longer than 100 characters. This item is
+        with state values longer than 100 characters. This item is
         optional.</t>
 
         <t hangText="caveats">A JSON List of String values, where each
@@ -174,8 +201,8 @@
       <t>The response is a JSON Object with all names in lowercase.
       The response MAY include the following names:
       <list style="hanging">
-        <t hangText="id">The value is the JSON String the client
-        supplied as the <spanx style="verb">id</spanx> value in the
+        <t hangText="state">The value is the JSON String the client
+        supplied as the <spanx style="verb">state</spanx> value in the
         request.</t>
 
         <t hangText="reason">The value is a JSON Object that provides
@@ -247,7 +274,7 @@
       requirement is that it is expressible as a JSON String.  It is
       unspecified how the client knows which String to include when
       expressing that desired limitations be enforced.</t>
-      
+
       <t>The server may choose to reject a macaroon request.  It may
       do so because it does not understand the caveat, or because
       server policy disallows this limitation.  Therefore, it may be
@@ -260,6 +287,24 @@
       how a client can discover server policy by extending the
       information returned by the macaroons configuration
       endpoint.</t>
+    </section>
+
+    <section title="Comparison with OAuth 2.0">
+      <t>The observant reader will note there is some overlap between
+      this protocol and OAuth 2.0 <xref target="oauth2"/>.  It is
+      worth noting how these two protocols differ.</t>
+
+      <t>The focus of the OAuth 2.0 authorization framework is on
+      delegating authority.  It allows a client (typically some web
+      service) to acquire limited access to some HTTP protected
+      resource.  Although the protocol focuses on bearer tokens (see
+      <xref target="oauth2-tokens"/>) the exact characteristics of the
+      token is left largely unspecified.</t>
+
+      <t>By comparison, this protocol focuses on requesting a
+      particular bearer token: a macaroon.  It includes
+      macaroon-specific features that are not included in OAuth
+      2.0.</t>
     </section>
 
     <section title="Security considerations">
@@ -299,7 +344,26 @@
   </middle>
 
   <back>
-    <references title="Normative References">
+    <references>
+      <reference anchor="oauth2">
+	<front>
+	  <title>The OAuth 2.0 Authorization Framework</title>
+	  <author fullname="Dick" initials="D." surname="Hardt" role="editor"/>
+	  <date month="October" year="2012"/>
+	</front>
+	<seriesInfo name="RFC" value="6749"/>
+      </reference>
+
+      <reference anchor="oauth2-tokens">
+	<front>
+	  <title>The OAuth 2.0 Authorization Framework: Bearer Token Usage</title>
+	  <author fullname="Michael" initials="M." surname="Jones"/>
+	  <author fullname="Dick" initials="D." surname="Hardt"/>
+	  <date month="October" year="2012"/>
+	</front>
+	<seriesInfo name="RFC" value="6749"/>
+      </reference>
+
       <reference anchor="macaroons" target="http://research.google.com/pubs/pub41892.html">
 	<front>
 	  <title>Macaroons: Cookies with Contextual Caveats for Decentralized Authorization in the Cloud</title>
